@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analitik dengan Redirect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --accent: #ffd700;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            color: var(--accent);
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .card-description {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--accent);
+            color: #333;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .analytics-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .analytics-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .analytics-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .analytics-chart {
+            height: 200px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .heartbeat-monitor {
+            background: var(--dark);
+            border-radius: 10px;
+            padding: 15px;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .heartbeat-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(to right, transparent 95%, var(--dark) 100%), 
+                repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .click-counter {
+            font-size: 0.9rem;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .data-info {
+            font-size: 0.8rem;
+            margin-top: 10px;
+            opacity: 0.6;
+            text-align: center;
+        }
+
+        .reset-btn {
+            background: var(--danger);
+            margin-left: 10px;
+            padding: 8px 15px;
+            font-size: 0.8rem;
+        }
+
+        .reset-btn:hover {
+            background: #e74c3c;
+        }
+
+        .redirect-notice {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 992px) {
+            .analytics-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard Analitik dengan Redirect</span>
+            </div>
+            <p class="tagline">Klik tombol akan mengarahkan ke halaman yang sesuai</p>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="card" id="tekaTekiCard">
+                <div class="card-icon">
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <h3 class="card-title">Teka-Teki</h3>
+                <p class="card-description">Uji kemampuan berpikir dan logika Anda dengan berbagai teka-teki menarik yang menantang.</p>
+                <button class="btn" onclick="handleButtonClick('teka-teki')">
+                    <i class="fas fa-play"></i> Mulai Teka-Teki
+                </button>
+                <div class="click-counter" id="tekaTekiCounter">Klik hari ini: 0 | Total: 0</div>
+            </div>
+
+            <div class="card" id="permainanCard">
+                <div class="card-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h3 class="card-title">Permainan</h3>
+                <p class="card-description">Nikmati berbagai permainan seru untuk mengisi waktu luang dan meningkatkan keterampilan.</p>
+                <button class="btn" onclick="handleButtonClick('permainan')">
+                    <i class="fas fa-play"></i> Main Sekarang
+                </button>
+                <div class="click-counter" id="permainanCounter">Klik hari ini: 0 | Total: 0</div>
+            </div>
+
+            <div class="card" id="analitikCard">
+                <div class="card-icon">
+                    <i class="fas fa-analytics"></i>
+                </div>
+                <h3 class="card-title">Analitik</h3>
+                <p class="card-description">Lihat statistik dan analisis data dengan visualisasi yang menarik dan mudah dipahami.</p>
+                <button class="btn" onclick="handleButtonClick('analitik')">
+                    <i class="fas fa-chart-line"></i> Lihat Analitik
+                </button>
+                <div class="click-counter" id="analitikCounter">Klik hari ini: 0 | Total: 0</div>
+            </div>
+        </div>
+
+        <div class="redirect-notice">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Info:</strong> Saat tombol diklik, Anda akan diarahkan ke halaman yang sesuai. 
+            Data klik tetap akan tercatat meskipun diarahkan ke halaman lain.
+        </div>
+
+        <div class="analytics-section">
+            <div class="analytics-card">
+                <div class="analytics-header">
+                    <h3 class="analytics-title">Aktivitas Investor</h3>
+                    <div>
+                        <span class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </span>
+                        <button class="btn reset-btn" onclick="resetData()" title="Reset semua data">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="analytics-value" id="investorCount">0</div>
+                <p>Total klik investor hari ini (data tersimpan di browser)</p>
+                <div class="data-info">Data otomatis disimpan di localStorage</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="tekaTekiStats">0</div>
+                        <div class="stat-label">Teka-Teki</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="permainanStats">0</div>
+                        <div class="stat-label">Permainan</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="analitikStats">0</div>
+                        <div class="stat-label">Analitik</div>
+                    </div>
+                </div>
+                
+                <div class="analytics-chart">
+                    <canvas id="investorChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analytics-card">
+                <div class="analytics-header">
+                    <h3 class="analytics-title">Kecepatan Jaringan Real-Time</h3>
+                    <span class="card-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </span>
+                </div>
+                <div class="analytics-value" id="networkSpeed">0 <small>Mbps</small></div>
+                <p>Kecepatan jaringan live monitoring</p>
+                <div class="data-info">Update real-time berdasarkan waktu</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="pingValue">0 ms</div>
+                        <div class="stat-label">Ping</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stabilityValue">0%</div>
+                        <div class="stat-label">Stabilitas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="downloadValue">0 Mbps</div>
+                        <div class="stat-label">Download</div>
+                    </div>
+                </div>
+                
+                <div class="analytics-chart">
+                    <div class="heartbeat-monitor" id="networkMonitor">
+                        <div class="heartbeat-line"></div>
+                        <canvas id="networkChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Dashboard Analitik dengan Redirect. Klik tombol akan mengarahkan ke halaman lain.</p>
+    </footer>
+
+    <script>
+        // Key untuk localStorage
+        const STORAGE_KEY = 'dashboardData';
+        const LAST_RESET_KEY = 'lastResetDate';
+
+        // Data default
+        const defaultData = {
+            'teka-teki': { today: 0, total: 0, daily: [0, 0, 0, 0, 0, 0, 0] },
+            'permainan': { today: 0, total: 0, daily: [0, 0, 0, 0, 0, 0, 0] },
+            'analitik': { today: 0, total: 0, daily: [0, 0, 0, 0, 0, 0, 0] },
+            lastUpdate: new Date().toDateString()
+        };
+
+        // Data untuk grafik jaringan
+        let networkData = {
+            speeds: Array(60).fill(100),
+            currentSpeed: 100,
+            ping: 20,
+            stability: 98,
+            lastUpdate: Date.now()
+        };
+
+        // URL redirect untuk setiap tombol
+        const redirectUrls = {
+            'teka-teki': 'teka-teki.html',
+            'permainan': 'permainan.html', 
+            'analitik': 'analitik.html'
+        };
+
+        // Load data dari localStorage
+        function loadData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            const lastReset = localStorage.getItem(LAST_RESET_KEY);
+            const today = new Date().toDateString();
+            
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                
+                // Reset data harian jika sudah beda hari
+                if (lastReset !== today) {
+                    const resetData = JSON.parse(JSON.stringify(parsed));
+                    resetData['teka-teki'].today = 0;
+                    resetData['permainan'].today = 0;
+                    resetData['analitik'].today = 0;
+                    resetData.lastUpdate = today;
+                    
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(resetData));
+                    localStorage.setItem(LAST_RESET_KEY, today);
+                    return resetData;
+                }
+                
+                return parsed;
+            }
+            
+            // Simpan data default jika tidak ada data yang tersimpan
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
+            localStorage.setItem(LAST_RESET_KEY, today);
+            return defaultData;
+        }
+
+        // Save data ke localStorage
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // Inisialisasi data
+        let clickData = loadData();
+
+        // Inisialisasi chart investor
+        const investorCtx = document.getElementById('investorChart').getContext('2d');
+        const investorChart = new Chart(investorCtx, {
+            type: 'line',
+            data: {
+                labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                datasets: [
+                    {
+                        label: 'Teka-Teki',
+                        data: clickData['teka-teki'].daily,
+                        borderColor: '#ffd700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Permainan',
+                        data: clickData['permainan'].daily,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Analitik',
+                        data: clickData['analitik'].daily,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Inisialisasi chart jaringan
+        const networkCtx = document.getElementById('networkChart').getContext('2d');
+        const networkChart = new Chart(networkCtx, {
+            type: 'line',
+            data: {
+                labels: Array(60).fill(''),
+                datasets: [{
+                    label: 'Kecepatan Jaringan',
+                    data: networkData.speeds,
+                    borderColor: '#28a745',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 0
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 50,
+                        max: 150,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            display: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            display: false
+                        },
+                        display: false
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            display: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            display: false
+                        },
+                        display: false
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    }
+                }
+            }
+        });
+
+        // Fungsi untuk menangani klik tombol dengan redirect
+        function handleButtonClick(type) {
+            // Update data klik
+            clickData[type].today++;
+            clickData[type].total++;
+            
+            // Update data harian (hari ini adalah index 6 - Minggu)
+            const todayIndex = 6;
+            clickData[type].daily[todayIndex]++;
+            
+            // Simpan ke localStorage
+            saveData(clickData);
+            
+            // Update tampilan
+            updateClickCounters();
+            updateInvestorChart();
+            
+            // Trigger perubahan jaringan saat ada klik
+            updateNetworkData();
+            
+            // Redirect ke halaman yang sesuai setelah delay singkat
+            setTimeout(() => {
+                window.location.href = redirectUrls[type];
+            }, 500); // Delay 500ms agar data sempat tersimpan
+        }
+
+        // Update counter klik
+        function updateClickCounters() {
+            document.getElementById('tekaTekiCounter').textContent = 
+                `Klik hari ini: ${clickData['teka-teki'].today} | Total: ${clickData['teka-teki'].total}`;
+            document.getElementById('permainanCounter').textContent = 
+                `Klik hari ini: ${clickData['permainan'].today} | Total: ${clickData['permainan'].total}`;
+            document.getElementById('analitikCounter').textContent = 
+                `Klik hari ini: ${clickData['analitik'].today} | Total: ${clickData['analitik'].total}`;
+            
+            // Update statistik
+            document.getElementById('tekaTekiStats').textContent = clickData['teka-teki'].today;
+            document.getElementById('permainanStats').textContent = clickData['permainan'].today;
+            document.getElementById('analitikStats').textContent = clickData['analitik'].today;
+            
+            // Update total investor
+            const totalToday = clickData['teka-teki'].today + clickData['permainan'].today + clickData['analitik'].today;
+            document.getElementById('investorCount').textContent = totalToday;
+        }
+
+        // Update chart investor
+        function updateInvestorChart() {
+            investorChart.data.datasets[0].data = clickData['teka-teki'].daily;
+            investorChart.data.datasets[1].data = clickData['permainan'].daily;
+            investorChart.data.datasets[2].data = clickData['analitik'].daily;
+            investorChart.update();
+        }
+
+        // Update data jaringan
+        function updateNetworkData() {
+            const now = Date.now();
+            const timeDiff = now - networkData.lastUpdate;
+            
+            // Pattern seperti detak jantung yang berubah berdasarkan waktu
+            const baseSpeed = 100;
+            const timeFactor = timeDiff / 1000;
+            
+            // Pattern EKG yang realistic
+            const pWave = Math.sin(timeFactor * 8) * 5;
+            const qrsComplex = Math.sin(timeFactor * 25) * 15;
+            const tWave = Math.sin(timeFactor * 6) * 8;
+            const noise = (Math.random() - 0.5) * 3;
+            
+            const newSpeed = baseSpeed + pWave + qrsComplex + tWave + noise;
+            
+            // Update data array
+            networkData.speeds.shift();
+            networkData.speeds.push(Math.max(80, Math.min(120, newSpeed)));
+            
+            // Update nilai real-time
+            networkData.currentSpeed = Math.round(newSpeed);
+            networkData.ping = 18 + Math.round(Math.random() * 4);
+            networkData.stability = 97 + Math.round(Math.random() * 2);
+            networkData.lastUpdate = now;
+            
+            updateNetworkDisplay();
+        }
+
+        // Update tampilan jaringan
+        function updateNetworkDisplay() {
+            document.getElementById('networkSpeed').textContent = 
+                Math.round(networkData.currentSpeed) + ' Mbps';
+            document.getElementById('pingValue').textContent = networkData.ping + ' ms';
+            document.getElementById('stabilityValue').textContent = networkData.stability + '%';
+            document.getElementById('downloadValue').textContent = 
+                Math.round(networkData.currentSpeed * 0.6) + ' Mbps';
+            
+            // Update chart jaringan
+            networkChart.data.datasets[0].data = networkData.speeds;
+            networkChart.update();
+        }
+
+        // Reset semua data
+        function resetData() {
+            if (confirm('Apakah Anda yakin ingin mereset semua data? Data akan dikembalikan ke nilai default.')) {
+                clickData = JSON.parse(JSON.stringify(defaultData));
+                clickData.lastUpdate = new Date().toDateString();
+                
+                saveData(clickData);
+                localStorage.setItem(LAST_RESET_KEY, new Date().toDateString());
+                
+                updateClickCounters();
+                updateInvestorChart();
+                alert('Data berhasil direset!');
+            }
+        }
+
+        // Inisialisasi data saat halaman dimuat
+        function initializeData() {
+            updateClickCounters();
+            updateNetworkDisplay();
+            
+            // Update jaringan secara periodic untuk efek real-time
+            setInterval(updateNetworkData, 1000);
+        }
+
+        // Jalankan inisialisasi
+        initializeData();
+    </script>
+</body>
+</html>
